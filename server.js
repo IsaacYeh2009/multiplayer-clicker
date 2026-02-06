@@ -36,8 +36,6 @@ const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
-
-// 🔴 THIS LINE WAS MISSING
 const wss = new WebSocket.Server({ server });
 
 let count = 0;
@@ -49,7 +47,7 @@ app.use(express.static(path.join(__dirname, "public")));
 wss.on("connection", (ws) => {
   console.log("Client connected");
 
-  // Send current count
+  // Send current count to new client
   ws.send(JSON.stringify({ count }));
 
   ws.on("message", (msg) => {
@@ -57,7 +55,7 @@ wss.on("connection", (ws) => {
 
     count++;
 
-    // Broadcast updated count
+    // Broadcast updated count to everyone
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ count }));
@@ -66,14 +64,10 @@ wss.on("connection", (ws) => {
   });
 });
 
-// Render-provided port
+// ✅ DECLARE PORT ONCE
 const PORT = process.env.PORT || 3000;
+
 server.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
 
-// IMPORTANT: Render provides the PORT
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log("Server running on port", PORT);
-});
