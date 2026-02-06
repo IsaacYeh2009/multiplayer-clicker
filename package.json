@@ -1,7 +1,7 @@
 {
   "name": "multiplayer-clicker",
   "version": "1.0.0",
-  "description": "A simple multiplayer clicker game",
+  "description": "Simple multiplayer clicker game using WebSockets",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
