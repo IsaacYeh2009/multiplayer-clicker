@@ -29,9 +29,27 @@ wss.on("connection", (ws) => {
   });
 });
 */
+const express = require("express");
+const http = require("http");
+const WebSocket = require("ws");
+const path = require("path");
+
+const app = express();
+const server = http.createServer(app);
+
+// 🔴 THIS LINE WAS MISSING
+const wss = new WebSocket.Server({ server });
+
+let count = 0;
+
+// Serve frontend files
+app.use(express.static(path.join(__dirname, "public")));
+
+// WebSocket logic
 wss.on("connection", (ws) => {
   console.log("Client connected");
 
+  // Send current count
   ws.send(JSON.stringify({ count }));
 
   ws.on("message", (msg) => {
@@ -39,12 +57,19 @@ wss.on("connection", (ws) => {
 
     count++;
 
-    wss.clients.forEach(client => {
+    // Broadcast updated count
+    wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ count }));
       }
     });
   });
+});
+
+// Render-provided port
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
 
 // IMPORTANT: Render provides the PORT
