@@ -1,22 +1,36 @@
-// Get elements from the page
-const button = document.getElementById("clickBtn");
-const counter = document.getElementById("counter");
+const express = require("express");
+const http = require("http");
+const WebSocket = require("ws");
+const path = require("path");
 
-// Choose correct WebSocket protocol (ws for local, wss for Render/HTTPS)
-const protocol = location.protocol === "https:" ? "wss" : "ws";
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
-// Connect to the SAME host that served the page
-const socket = new WebSocket(`${protocol}://${location.host}`);
+let count = 0;
 
-// When we receive data from the server
-socket.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  counter.textContent = data.count;
-};
+// Serve static files (index.html, script.js, style.css)
+app.use(express.static(path.join(__dirname, "public")));
 
-// When the button is clicked, tell the server
-button.addEventListener("click", () => {
-  if (socket.readyState === WebSocket.OPEN) {
-    socket.send("click");
-  }
+// WebSocket logic
+wss.on("connection", (ws) => {
+  // Send current count when someone connects
+  ws.send(JSON.stringify({ count }));
+
+  ws.on("message", () => {
+    count++;
+
+    // Broadcast updated count to everyone
+    wss.clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ count }));
+      }
+    });
+  });
+});
+
+// IMPORTANT: Render provides the PORT
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
