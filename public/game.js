@@ -1,14 +1,16 @@
-const scoreText = document.getElementById("score");
-const button = document.getElementById("btn");
+const button = document.getElementById("clickBtn");
+const counter = document.getElementById("counter");
 
-// Connect to WebSocket server
-const socket = new WebSocket(`ws://${location.host}`);
+const protocol = location.protocol === "https:" ? "wss" : "ws";
+const socket = new WebSocket(`${protocol}://${location.host}`);
 
 socket.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  scoreText.textContent = "Score: " + data.score;
+  counter.textContent = data.count;
 };
 
-button.onclick = () => {
-  socket.send("click");
-};
+button.addEventListener("click", () => {
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.send("click");
+  }
+});
