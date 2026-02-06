@@ -1,4 +1,4 @@
-const express = require("express");
+/*const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
 const path = require("path");
@@ -21,6 +21,24 @@ wss.on("connection", (ws) => {
     count++;
 
     // Broadcast updated count to everyone
+    wss.clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ count }));
+      }
+    });
+  });
+});
+*/
+wss.on("connection", (ws) => {
+  console.log("Client connected");
+
+  ws.send(JSON.stringify({ count }));
+
+  ws.on("message", (msg) => {
+    console.log("Received message:", msg.toString());
+
+    count++;
+
     wss.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ count }));
