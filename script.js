@@ -1,40 +1,22 @@
-const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
+// Get elements from the page
+const button = document.getElementById("clickBtn");
+const counter = document.getElementById("counter");
 
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+// Choose correct WebSocket protocol (ws for local, wss for Render/HTTPS)
+const protocol = location.protocol === "https:" ? "wss" : "ws";
 
-let globalScore = 0;
+// Connect to the SAME host that served the page
+const socket = new WebSocket(`${protocol}://${location.host}`);
 
-// Serve static files
-app.use(express.static("public"));
+// When we receive data from the server
+socket.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  counter.textContent = data.count;
+};
 
-// WebSocket logic
-wss.on("connection", (ws) => {
-  console.log("Player connected");
-
-  // Send current score to new player
-  ws.send(JSON.stringify({ score: globalScore }));
-
-  ws.on("message", () => {
-    globalScore++;
-
-    // Broadcast updated score to all players
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ score: globalScore }));
-      }
-    });
-  });
-
-  ws.on("close", () => {
-    console.log("Player disconnected");
-  });
-});
-
-// Start server
-server.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+// When the button is clicked, tell the server
+button.addEventListener("click", () => {
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.send("click");
+  }
 });
