@@ -1,34 +1,3 @@
-/*const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
-const path = require("path");
-
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
-
-let count = 0;
-
-// Serve static files (index.html, script.js, style.css)
-app.use(express.static(path.join(__dirname, "public")));
-
-// WebSocket logic
-wss.on("connection", (ws) => {
-  // Send current count when someone connects
-  ws.send(JSON.stringify({ count }));
-
-  ws.on("message", () => {
-    count++;
-
-    // Broadcast updated count to everyone
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ count }));
-      }
-    });
-  });
-});
-*/
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
