@@ -20,7 +20,7 @@ body {
   padding: 8px 16px;
   margin: 5px;
 }
-
+/*
 #sendBtn {
   font-size: 16px;
   padding: 8px 16px;
@@ -28,7 +28,7 @@ body {
   position: fixed;
   right: 0;
   bottom: 0;
-}
+} */
 
 #chat {
   width: 300px;
@@ -42,7 +42,7 @@ body {
   right: 0;
   bottom: 40px;
 }
-
+/*
 input {
   padding: 5px;
   margin: 5px;
@@ -50,4 +50,4 @@ input {
   position: fixed;
   right: 90px;
   bottom: 5px;
-}
+} */
