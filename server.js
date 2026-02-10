@@ -7,17 +7,12 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-let count = 0;
+let globalCount = 0;
 
-// Serve frontend files
 app.use(express.static(path.join(__dirname, "public")));
 
-// WebSocket logic
 wss.on("connection", (ws) => {
   console.log("Client connected");
-
-  // Send current count to new client
-  ws.send(JSON.stringify({ count }));
 
   // Per-client data
   ws.score = 0;
@@ -26,38 +21,51 @@ wss.on("connection", (ws) => {
   // Send initial state
   ws.send(JSON.stringify({
     type: "init",
+    globalCount,
     score: ws.score
   }));
-  
+
   ws.on("message", (msg) => {
-    console.log("Received message:", msg.toString());
-    
-    // Broadcast updated count to everyone
-    count++;
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ count }));
-      }
-    });
-    
+    let data;
+
+    try {
+      data = JSON.parse(msg);
+    } catch (err) {
+      console.error("Invalid JSON received:", msg.toString());
+      return;
+    }
+
+    console.log("Received:", data);
+
     // Set username
-    const data = JSON.parse(msg);
     if (data.type === "setName") {
       ws.username = data.name;
       return;
     }
 
-    // Click = increase ONLY this client's score
+    // Global + per-client click
     if (data.type === "click") {
+      globalCount++;
       ws.score++;
 
+      // Send global count to everyone
+      wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: "global",
+            count: globalCount
+          }));
+        }
+      });
+
+      // Send personal score only to this client
       ws.send(JSON.stringify({
         type: "score",
         score: ws.score
       }));
     }
-    
-    // Chat message
+
+    // Chat
     if (data.type === "chat") {
       wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
@@ -72,7 +80,7 @@ wss.on("connection", (ws) => {
   });
 
   ws.on("close", () => {
-      console.log("Client disconnected");
+    console.log("Client disconnected");
   });
 });
 
@@ -80,4 +88,3 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
-
