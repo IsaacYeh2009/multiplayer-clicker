@@ -45,6 +45,7 @@ body {
 
 input {
   padding: 5px;
+  margin: 5px;
   width: 200px;
   position: fixed;
   right: 90px;
