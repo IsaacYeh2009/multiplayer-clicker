@@ -30,12 +30,13 @@ wss.on("connection", (ws) => {
         client.send(JSON.stringify({ count }));
       }
     });
+
+    ws.on("close", () => {
+      console.log("Client disconnected");
   });
 });
 
-// ✅ DECLARE PORT ONCE
 const PORT = process.env.PORT || 3000;
-
 server.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
