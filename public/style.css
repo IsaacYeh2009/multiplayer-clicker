@@ -14,10 +14,20 @@ body {
   font-size: 48px;
   margin: 20px;
 }
-button {
+
+#clickBtn {
   font-size: 16px;
   padding: 8px 16px;
   margin: 5px;
+}
+
+#sendBtn {
+  font-size: 16px;
+  padding: 8px 16px;
+  margin: 5px;
+  position: fixed;
+  right: 0;
+  bottom: 0;
 }
 
 #chat {
@@ -30,7 +40,7 @@ button {
   background: #222;
   position: fixed;
   right: 0;
-  bottom: 0;
+  bottom: 50px;
 }
 
 input {
