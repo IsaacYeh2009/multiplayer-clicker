@@ -12,7 +12,6 @@ let username = prompt("Enter your username:");
 if (!username) username = "Anonymous";
 
 socket.onopen = () => {
-  console.log("WebSocket connected");
   socket.send(JSON.stringify({
     type: "setName",
     name: username
@@ -21,9 +20,17 @@ socket.onopen = () => {
 
 socket.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  globalCounter.textContent = data.count;
-  
-  if (data.type === "init" || data.type === "score") {
+
+  if (data.type === "init") {
+    globalCounter.textContent = data.globalCount;
+    clientCounter.textContent = data.score;
+  }
+
+  if (data.type === "global") {
+    globalCounter.textContent = data.count;
+  }
+
+  if (data.type === "score") {
     clientCounter.textContent = data.score;
   }
 
@@ -35,16 +42,8 @@ socket.onmessage = (event) => {
 };
 
 button.addEventListener("click", () => {
-  if (socket.readyState === WebSocket.OPEN) {
-    socket.send("click");
-  }
-});
-
-/*
-button.addEventListener("click", () => {
   socket.send(JSON.stringify({ type: "click" }));
 });
-*/
 
 sendBtn.addEventListener("click", () => {
   const msg = chatInput.value.trim();
