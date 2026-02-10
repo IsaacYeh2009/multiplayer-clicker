@@ -1,4 +1,4 @@
-const button = document.getElementById("clickBtn");
+const clickBtn = document.getElementById("clickBtn");
 const globalCounter = document.getElementById("globalCounter");
 const clientCounter = document.getElementById("clientCounter");
 const chat = document.getElementById("chat");
@@ -41,7 +41,7 @@ socket.onmessage = (event) => {
   }
 };
 
-button.addEventListener("click", () => {
+clickBtn.addEventListener("click", () => {
   socket.send(JSON.stringify({ type: "click" }));
 });
 
