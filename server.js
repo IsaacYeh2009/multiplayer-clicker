@@ -39,8 +39,9 @@ wss.on("connection", (ws) => {
         client.send(JSON.stringify({ count }));
       }
     });
-
+    
     // Set username
+    const data = JSON.parse(msg);
     if (data.type === "setName") {
       ws.username = data.name;
       return;
