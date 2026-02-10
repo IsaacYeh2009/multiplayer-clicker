@@ -5,11 +5,15 @@ body {
   font-family: Arial, sans-serif;
 }
 
-#counter {
+#globalCounter {
   font-size: 48px;
   margin: 20px;
 }
 
+#clientCounter {
+  font-size: 48px;
+  margin: 20px;
+}
 button {
   font-size: 16px;
   padding: 8px 16px;
