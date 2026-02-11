@@ -16,7 +16,7 @@ wss.on("connection", (ws) => {
 
   // Per-client data
   ws.score = 0;
-  ws.username = "Anonymous";
+  ws.username = "Dumb person";
 
   // Send initial state
   ws.send(JSON.stringify({
