@@ -29,13 +29,15 @@ body {
 #clientContainer {
   position: fixed;
   left: 5px;
-  bottom: 5px;
+  bottom: -15px;
   text-align: center;
+  margin-left: 5px;
 }
 
 #clientCounter {
+  position: relative;
   font-size: 32px;
-  bottom: 10px;
+  bottom: 15px;
 }
 
 /* ===== BOTTOM RIGHT (CHAT) ===== */
@@ -64,5 +66,5 @@ body {
 #sendBtn {
   width: 25%;
   padding: 5px;
-  margin-left: 5px; 
+  margin-right: 5px;
 }
