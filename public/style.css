@@ -1,3 +1,16 @@
+.title {
+  background-color: red;
+  color: white;
+  padding: 5px;
+  margin: 0;
+}
+
+.title h1 {
+  text-align: center;
+  font-size: 45px;
+  margin: 10px 0;
+}
+
 body {
   background: #111;
   color: white;
