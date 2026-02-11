@@ -28,8 +28,8 @@ body {
 /* ===== BOTTOM LEFT (CLIENT SCORE) ===== */
 #clientContainer {
   position: fixed;
-  left: 20px;
-  bottom: 20px;
+  left: 5px;
+  bottom: 5px;
   text-align: center;
 }
 
@@ -41,8 +41,8 @@ body {
 /* ===== BOTTOM RIGHT (CHAT) ===== */
 #chatContainer {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: 5px;
+  bottom: 5px;
   width: 300px;
 }
 
@@ -58,10 +58,11 @@ body {
 #chatInput {
   width: 65%;
   padding: 5px;
+  margin-left: 5px;
 }
 
 #sendBtn {
   width: 25%;
   padding: 5px;
-  /* margin-left: 5px; */
+  margin-left: 5px; 
 }
