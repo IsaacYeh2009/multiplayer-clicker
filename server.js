@@ -11,6 +11,37 @@ let globalCount = 0;
 
 app.use(express.static(path.join(__dirname, "public")));
 
+function buildLeaderboard() {
+  const scoresByName = new Map();
+
+  wss.clients.forEach((client) => {
+    if (client.readyState !== WebSocket.OPEN) {
+      return;
+    }
+
+    const name = client.username || "Anonymous";
+    const score = Number(client.score) || 0;
+    scoresByName.set(name, (scoresByName.get(name) || 0) + score);
+  });
+
+  return [...scoresByName.entries()]
+    .map(([name, score]) => ({ name, score }))
+    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+}
+
+function broadcastLeaderboard() {
+  const entries = buildLeaderboard();
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({
+        type: "leaderboard",
+        entries,
+      }));
+    }
+  });
+}
+
 wss.on("connection", (ws) => {
   console.log("Client connected");
 
@@ -22,7 +53,8 @@ wss.on("connection", (ws) => {
   ws.send(JSON.stringify({
     type: "init",
     globalCount,
-    score: ws.score
+    score: ws.score,
+    leaderboard: buildLeaderboard(),
   }));
 
   ws.on("message", (msg) => {
@@ -39,7 +71,8 @@ wss.on("connection", (ws) => {
 
     // Set username
     if (data.type === "setName") {
-      ws.username = data.name;
+      ws.username = data.name || "Anonymous";
+      broadcastLeaderboard();
       return;
     }
 
@@ -49,11 +82,11 @@ wss.on("connection", (ws) => {
       ws.score++;
 
       // Send global count to everyone
-      wss.clients.forEach(client => {
+      wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify({
             type: "global",
-            count: globalCount
+            count: globalCount,
           }));
         }
       });
@@ -61,18 +94,21 @@ wss.on("connection", (ws) => {
       // Send personal score only to this client
       ws.send(JSON.stringify({
         type: "score",
-        score: ws.score
+        score: ws.score,
+        leaderboard: buildLeaderboard(),
       }));
+
+      broadcastLeaderboard();
     }
 
     // Chat
     if (data.type === "chat") {
-      wss.clients.forEach(client => {
+      wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify({
             type: "chat",
             name: ws.username,
-            message: data.message
+            message: data.message,
           }));
         }
       });
@@ -81,6 +117,7 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     console.log("Client disconnected");
+    broadcastLeaderboard();
   });
 });
 
