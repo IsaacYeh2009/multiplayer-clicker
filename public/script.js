@@ -70,6 +70,16 @@ clickBtn.addEventListener("click", () => {
   socket.send(JSON.stringify({ type: "click" }));
 });
 
+chatInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    const msg = chatInput.value.trim();
+    if (msg !== "") {
+      socket.send(JSON.stringify({ type: "chat", message: msg }));
+      chatInput.value = "";
+    }
+  }
+});
+
 sendBtn.addEventListener("click", () => {
   const msg = chatInput.value.trim();
   if (msg !== "") {
