@@ -12,7 +12,6 @@ const socket = new WebSocket(`${protocol}://${location.host}`);
 let username = prompt("Enter your username:");
 if (!username) username = "Anonymous";
 
-
 function renderLeaderboard(entries) {
   leaderboard.innerHTML = "";
 
@@ -31,10 +30,12 @@ function renderLeaderboard(entries) {
 }
 
 socket.onopen = () => {
-  socket.send(JSON.stringify({
-    type: "setName",
-    name: username
-  }));
+  socket.send(
+    JSON.stringify({
+      type: "setName",
+      name: username,
+    })
+  );
 };
 
 socket.onmessage = (event) => {
@@ -63,6 +64,7 @@ socket.onmessage = (event) => {
     const div = document.createElement("div");
     div.textContent = `${data.name}: ${data.message}`;
     chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
   }
 };
 
@@ -83,10 +85,18 @@ chatInput.addEventListener("keydown", (event) => {
 sendBtn.addEventListener("click", () => {
   const msg = chatInput.value.trim();
   if (msg !== "") {
-    socket.send(JSON.stringify({
-      type: "chat",
-      message: msg
-    }));
+    socket.send(
+      JSON.stringify({
+        type: "chat",
+        message: msg,
+      })
+    );
     chatInput.value = "";
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "/") {
+    chatInput.focus();
   }
 });
