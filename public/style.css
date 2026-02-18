@@ -95,3 +95,49 @@ body {
   padding: 5px;
   margin-right: 5px;
 }
+
+/* ===== ADMIN ADDITIONS (minimal) ===== */
+#announcementBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #8f1e1e;
+  color: white;
+  text-align: center;
+  padding: 8px;
+  z-index: 10;
+}
+
+#adminContainer {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  width: 290px;
+  border: 1px solid #444;
+  background: #1b1b1b;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+#adminContainer h3 {
+  margin: 0 0 8px;
+}
+
+.adminRow {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.adminRow input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px;
+}
+
+#adminStatus {
+  min-height: 16px;
+  font-size: 13px;
+  color: #9bd79b;
+}
