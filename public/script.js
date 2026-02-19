@@ -3,6 +3,7 @@ const globalCounter = document.getElementById("globalCounter");
 const clientCounter = document.getElementById("clientCounter");
 const chat = document.getElementById("chat");
 const chatInput = document.getElementById("chatInput");
+const chatImageInput = document.getElementById("chatImageInput");
 const sendBtn = document.getElementById("sendBtn");
 const leaderboard = document.getElementById("leaderboard");
 const announcementBar = document.getElementById("announcementBar");
@@ -16,6 +17,7 @@ const adminAnnouncementBtn = document.getElementById("adminAnnouncementBtn");
 const adminStatus = document.getElementById("adminStatus");
 
 const ADMIN_USERNAME = "bruh";
+const MAX_IMAGE_SIZE_BYTES = 1024 * 1024;
 
 const protocol = location.protocol === "https:" ? "wss" : "ws";
 const socket = new WebSocket(`${protocol}://${location.host}`);
@@ -26,6 +28,7 @@ username = username.trim();
 if (!username) username = "Anonymous";
 
 let announcementTimeout = null;
+let lastClickSentAt = 0;
 
 function renderLeaderboard(entries) {
   leaderboard.innerHTML = "";
@@ -65,6 +68,86 @@ function showAnnouncement(message) {
     announcementBar.hidden = true;
     announcementBar.textContent = "";
   }, 4000);
+}
+
+function addChatMessage(name, message, imageDataUrl) {
+  const wrapper = document.createElement("div");
+
+  if (message) {
+    const text = document.createElement("div");
+    text.textContent = `${name}: ${message}`;
+    wrapper.appendChild(text);
+  } else {
+    const label = document.createElement("div");
+    label.textContent = `${name} sent an image:`;
+    wrapper.appendChild(label);
+  }
+
+  if (imageDataUrl) {
+    const image = document.createElement("img");
+    image.src = imageDataUrl;
+    image.alt = "Chat image";
+    image.style.maxWidth = "100%";
+    image.style.maxHeight = "140px";
+    image.style.display = "block";
+    image.style.marginTop = "4px";
+    wrapper.appendChild(image);
+  }
+
+  chat.appendChild(wrapper);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function readSelectedImageAsDataUrl() {
+  return new Promise((resolve, reject) => {
+    const file = chatImageInput.files && chatImageInput.files[0];
+    if (!file) {
+      resolve("");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("Only image files are allowed."));
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      reject(new Error("Image is too large (max 1MB)."));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Failed to read image."));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function sendChatMessage() {
+  const message = chatInput.value.trim();
+
+  let imageDataUrl;
+  try {
+    imageDataUrl = await readSelectedImageAsDataUrl();
+  } catch (err) {
+    showAdminStatus(err.message, true);
+    return;
+  }
+
+  if (message === "" && !imageDataUrl) {
+    return;
+  }
+
+  socket.send(
+    JSON.stringify({
+      type: "chat",
+      message,
+      image: imageDataUrl,
+    })
+  );
+
+  chatInput.value = "";
+  chatImageInput.value = "";
 }
 
 socket.onopen = () => {
@@ -112,10 +195,7 @@ socket.onmessage = (event) => {
   }
 
   if (data.type === "chat") {
-    const div = document.createElement("div");
-    div.textContent = `${data.name}: ${data.message}`;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
+    addChatMessage(data.name, data.message, data.image);
   }
 
   if (data.type === "adminStatus") {
@@ -133,6 +213,12 @@ socket.onmessage = (event) => {
 };
 
 clickBtn.addEventListener("click", () => {
+  const now = Date.now();
+  if (now - lastClickSentAt < 120) {
+    return;
+  }
+
+  lastClickSentAt = now;
   socket.send(JSON.stringify({ type: "click" }));
 });
 
@@ -165,25 +251,12 @@ adminAnnouncementBtn.addEventListener("click", () => {
 
 chatInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
-    const msg = chatInput.value.trim();
-    if (msg !== "") {
-      socket.send(JSON.stringify({ type: "chat", message: msg }));
-      chatInput.value = "";
-    }
+    sendChatMessage();
   }
 });
 
 sendBtn.addEventListener("click", () => {
-  const msg = chatInput.value.trim();
-  if (msg !== "") {
-    socket.send(
-      JSON.stringify({
-        type: "chat",
-        message: msg,
-      })
-    );
-    chatInput.value = "";
-  }
+  sendChatMessage();
 });
 
 document.addEventListener("keydown", (event) => {
