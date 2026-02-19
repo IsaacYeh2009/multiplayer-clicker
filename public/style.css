@@ -96,6 +96,12 @@ body {
   margin-right: 5px;
 }
 
+#chatImageInput {
+  width: 96%;
+  margin: 6px 0 0 5px;
+  font-size: 12px;
+}
+
 /* ===== ADMIN ADDITIONS (minimal) ===== */
 #announcementBar {
   position: fixed;
