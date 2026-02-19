@@ -18,7 +18,9 @@ function buildLeaderboard() {
   const scoresByName = new Map();
 
   wss.clients.forEach((client) => {
-    if (client.readyState !== WebSocket.OPEN) return;
+    if (client.readyState !== WebSocket.OPEN) {
+      return;
+    }
 
     const name = client.username || "Anonymous";
     const score = Number(client.score) || 0;
@@ -52,7 +54,6 @@ wss.on("connection", (ws) => {
   ws.username = "Anonymous";
   ws.isAdmin = false;
 
-  // Send initial state
   ws.send(
     JSON.stringify({
       type: "init",
@@ -68,14 +69,13 @@ wss.on("connection", (ws) => {
 
     try {
       data = JSON.parse(msg);
-    } catch {
-      console.error("Invalid JSON:", msg.toString());
+    } catch (err) {
+      console.error("Invalid JSON received:", msg.toString());
       return;
     }
 
     console.log("Received:", data);
 
-    // Set username
     if (data.type === "setName") {
       ws.username = String(data.name || "Anonymous").trim() || "Anonymous";
       ws.isAdmin = false;
@@ -83,10 +83,9 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    // Admin auth
     if (data.type === "adminAuth") {
-      const password = String(data.password || "");
       const normalizedName = ws.username.toLowerCase();
+      const password = String(data.password || "");
 
       if (normalizedName === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
         ws.isAdmin = true;
@@ -110,12 +109,10 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    // CLICK (FIXED: increments ONCE)
     if (data.type === "click") {
-      globalCount++;
-      ws.score++;
+      globalCount += 1;
+      ws.score += 1;
 
-      // Send global count to everyone
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(
@@ -127,7 +124,6 @@ wss.on("connection", (ws) => {
         }
       });
 
-      // Send personal score to clicking client
       ws.send(
         JSON.stringify({
           type: "score",
@@ -140,9 +136,10 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    // Admin: set global
     if (data.type === "adminSetGlobal") {
-      if (!ws.isAdmin) return;
+      if (!ws.isAdmin) {
+        return;
+      }
 
       const nextCount = Number(data.count);
       if (!Number.isFinite(nextCount) || nextCount < 0) {
@@ -170,9 +167,10 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    // Admin announcement
     if (data.type === "adminAnnouncement") {
-      if (!ws.isAdmin) return;
+      if (!ws.isAdmin) {
+        return;
+      }
 
       const message = String(data.message || "").trim();
       if (!message) {
@@ -198,15 +196,22 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    // Chat
     if (data.type === "chat") {
+      const message = String(data.message || "").trim();
+      const image = String(data.image || "").trim();
+
+      if (!message && !image) {
+        return;
+      }
+
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(
             JSON.stringify({
               type: "chat",
               name: ws.username,
-              message: data.message,
+              message,
+              image,
             })
           );
         }
