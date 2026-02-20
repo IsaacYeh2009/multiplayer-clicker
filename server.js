@@ -37,12 +37,10 @@ function broadcastLeaderboard() {
 
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
-      client.send(
-        JSON.stringify({
-          type: "leaderboard",
-          entries,
-        })
-      );
+      client.send(JSON.stringify({
+        type: "leaderboard",
+        entries,
+      }));
     }
   });
 }
@@ -54,15 +52,13 @@ wss.on("connection", (ws) => {
   ws.username = "Anonymous";
   ws.isAdmin = false;
 
-  ws.send(
-    JSON.stringify({
-      type: "init",
-      globalCount,
-      score: ws.score,
-      leaderboard: buildLeaderboard(),
-      isAdmin: ws.isAdmin,
-    })
-  );
+  ws.send(JSON.stringify({
+    type: "init",
+    globalCount,
+    score: ws.score,
+    leaderboard: buildLeaderboard(),
+    isAdmin: ws.isAdmin,
+  }));
 
   ws.on("message", (msg) => {
     let data;
@@ -89,22 +85,18 @@ wss.on("connection", (ws) => {
 
       if (normalizedName === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
         ws.isAdmin = true;
-        ws.send(
-          JSON.stringify({
-            type: "adminStatus",
-            isAdmin: true,
-            message: "Admin mode enabled.",
-          })
-        );
+        ws.send(JSON.stringify({
+          type: "adminStatus",
+          isAdmin: true,
+          message: "Admin mode enabled.",
+        }));
       } else {
         ws.isAdmin = false;
-        ws.send(
-          JSON.stringify({
-            type: "adminStatus",
-            isAdmin: false,
-            message: "Invalid admin password.",
-          })
-        );
+        ws.send(JSON.stringify({
+          type: "adminStatus",
+          isAdmin: false,
+          message: "Invalid admin password.",
+        }));
       }
       return;
     }
@@ -115,22 +107,18 @@ wss.on("connection", (ws) => {
 
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(
-            JSON.stringify({
-              type: "global",
-              count: globalCount,
-            })
-          );
+          client.send(JSON.stringify({
+            type: "global",
+            count: globalCount,
+          }));
         }
       });
 
-      ws.send(
-        JSON.stringify({
-          type: "score",
-          score: ws.score,
-          leaderboard: buildLeaderboard(),
-        })
-      );
+      ws.send(JSON.stringify({
+        type: "score",
+        score: ws.score,
+        leaderboard: buildLeaderboard(),
+      }));
 
       broadcastLeaderboard();
       return;
@@ -143,12 +131,10 @@ wss.on("connection", (ws) => {
 
       const nextCount = Number(data.count);
       if (!Number.isFinite(nextCount) || nextCount < 0) {
-        ws.send(
-          JSON.stringify({
-            type: "adminError",
-            message: "Global count must be 0 or greater.",
-          })
-        );
+        ws.send(JSON.stringify({
+          type: "adminError",
+          message: "Global count must be 0 or greater.",
+        }));
         return;
       }
 
@@ -156,12 +142,10 @@ wss.on("connection", (ws) => {
 
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(
-            JSON.stringify({
-              type: "global",
-              count: globalCount,
-            })
-          );
+          client.send(JSON.stringify({
+            type: "global",
+            count: globalCount,
+          }));
         }
       });
       return;
@@ -174,23 +158,19 @@ wss.on("connection", (ws) => {
 
       const message = String(data.message || "").trim();
       if (!message) {
-        ws.send(
-          JSON.stringify({
-            type: "adminError",
-            message: "Message cannot be empty.",
-          })
-        );
+        ws.send(JSON.stringify({
+          type: "adminError",
+          message: "Message cannot be empty.",
+        }));
         return;
       }
 
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(
-            JSON.stringify({
-              type: "announcement",
-              message,
-            })
-          );
+          client.send(JSON.stringify({
+            type: "announcement",
+            message,
+          }));
         }
       });
       return;
@@ -199,21 +179,21 @@ wss.on("connection", (ws) => {
     if (data.type === "chat") {
       const message = String(data.message || "").trim();
       const image = String(data.image || "").trim();
+      const video = String(data.video || "").trim();
 
-      if (!message && !image) {
+      if (!message && !image && !video) {
         return;
       }
 
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(
-            JSON.stringify({
-              type: "chat",
-              name: ws.username,
-              message,
-              image,
-            })
-          );
+          client.send(JSON.stringify({
+            type: "chat",
+            name: ws.username,
+            message,
+            image,
+            video,
+          }));
         }
       });
     }
