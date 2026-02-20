@@ -110,12 +110,12 @@ function readSelectedImageAsDataUrl() {
       reject(new Error("Only image files are allowed."));
       return;
     }
-
+/*
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
       reject(new Error("Image is too large (max 1MB)."));
       return;
     }
-
+*/
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ""));
     reader.onerror = () => reject(new Error("Failed to read image."));
