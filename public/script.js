@@ -3,21 +3,20 @@ const globalCounter = document.getElementById("globalCounter");
 const clientCounter = document.getElementById("clientCounter");
 const chat = document.getElementById("chat");
 const chatInput = document.getElementById("chatInput");
-const chatImageInput = document.getElementById("chatImageInput");
+const chatMediaInput = document.getElementById("chatMediaInput");
 const sendBtn = document.getElementById("sendBtn");
 const leaderboard = document.getElementById("leaderboard");
 const announcementBar = document.getElementById("announcementBar");
 const adminContainer = document.getElementById("adminContainer");
 const adminGlobalInput = document.getElementById("adminGlobalInput");
 const adminSetGlobalBtn = document.getElementById("adminSetGlobalBtn");
-const adminAnnouncementInput = document.getElementById(
-  "adminAnnouncementInput"
-);
+const adminAnnouncementInput = document.getElementById("adminAnnouncementInput");
 const adminAnnouncementBtn = document.getElementById("adminAnnouncementBtn");
 const adminStatus = document.getElementById("adminStatus");
 
 const ADMIN_USERNAME = "bruh";
 const MAX_IMAGE_SIZE_BYTES = 1024 * 1024;
+const MAX_VIDEO_SIZE_BYTES = 8 * 1024 * 1024;
 
 const protocol = location.protocol === "https:" ? "wss" : "ws";
 const socket = new WebSocket(`${protocol}://${location.host}`);
@@ -70,7 +69,7 @@ function showAnnouncement(message) {
   }, 4000);
 }
 
-function addChatMessage(name, message, imageDataUrl) {
+function addChatMessage(name, message, imageDataUrl, videoDataUrl) {
   const wrapper = document.createElement("div");
 
   if (message) {
@@ -94,31 +93,56 @@ function addChatMessage(name, message, imageDataUrl) {
     wrapper.appendChild(image);
   }
 
+  if (videoDataUrl) {
+    const video = document.createElement("video");
+    video.src = videoDataUrl;
+    video.controls = true;
+    video.style.maxWidth = "100%";
+    video.style.maxHeight = "170px";
+    video.style.display = "block";
+    video.style.marginTop = "4px";
+    wrapper.appendChild(video);
+  }
+
   chat.appendChild(wrapper);
   chat.scrollTop = chat.scrollHeight;
 }
 
-function readSelectedImageAsDataUrl() {
+function readSelectedMediaAsDataUrl() {
   return new Promise((resolve, reject) => {
-    const file = chatImageInput.files && chatImageInput.files[0];
+    const file = chatMediaInput.files && chatMediaInput.files[0];
     if (!file) {
-      resolve("");
+      resolve({ imageDataUrl: "", videoDataUrl: "" });
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      reject(new Error("Only image files are allowed."));
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+
+    if (!isImage && !isVideo) {
+      reject(new Error("Only image and video files are allowed."));
       return;
     }
-/*
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+
+    if (isImage && file.size > MAX_IMAGE_SIZE_BYTES) {
       reject(new Error("Image is too large (max 1MB)."));
       return;
     }
-*/
+
+    if (isVideo && file.size > MAX_VIDEO_SIZE_BYTES) {
+      reject(new Error("Video is too large (max 8MB)."));
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Failed to read image."));
+    reader.onload = () => {
+      const value = String(reader.result || "");
+      resolve({
+        imageDataUrl: isImage ? value : "",
+        videoDataUrl: isVideo ? value : "",
+      });
+    };
+    reader.onerror = () => reject(new Error("Failed to read selected file."));
     reader.readAsDataURL(file);
   });
 }
@@ -127,14 +151,17 @@ async function sendChatMessage() {
   const message = chatInput.value.trim();
 
   let imageDataUrl;
+  let videoDataUrl;
   try {
-    imageDataUrl = await readSelectedImageAsDataUrl();
+    const media = await readSelectedMediaAsDataUrl();
+    imageDataUrl = media.imageDataUrl;
+    videoDataUrl = media.videoDataUrl;
   } catch (err) {
     showAdminStatus(err.message, true);
     return;
   }
 
-  if (message === "" && !imageDataUrl) {
+  if (message === "" && !imageDataUrl && !videoDataUrl) {
     return;
   }
 
@@ -143,11 +170,12 @@ async function sendChatMessage() {
       type: "chat",
       message,
       image: imageDataUrl,
+      video: videoDataUrl,
     })
   );
 
   chatInput.value = "";
-  chatImageInput.value = "";
+  chatMediaInput.value = "";
 }
 
 socket.onopen = () => {
@@ -195,7 +223,7 @@ socket.onmessage = (event) => {
   }
 
   if (data.type === "chat") {
-    addChatMessage(data.name, data.message, data.image);
+    addChatMessage(data.name, data.message, data.image, data.video);
   }
 
   if (data.type === "adminStatus") {
