@@ -1,53 +1,50 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Multiplayer Clicker + Chat</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div id="announcementBar" hidden></div>
+<head>
+  <title>Multiplayer Clicker + Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-    <div id="globalContainer">
-      <h1>Global Click Count</h1>
-      <div id="globalCounter">0</div>
-      <button id="clickBtn">Click me</button>
+  <div id="announcementBar" hidden></div>
+
+  <div id="globalContainer">
+    <h1>Global Click Count</h1>
+    <div id="globalCounter">0</div>
+    <button id="clickBtn">Click me</button>
+  </div>
+
+  <div id="clientContainer">
+    <h3>Your Score</h3>
+    <div id="clientCounter">0</div>
+  </div>
+
+  <div id="leaderboardContainer">
+    <h3>Leaderboard</h3>
+    <ol id="leaderboard"></ol>
+  </div>
+
+  <div id="chatContainer">
+    <div id="chat"></div>
+    <input id="chatInput" placeholder="Type message..." />
+    <button id="sendBtn">Send</button>
+    <input id="chatMediaInput" type="file" accept="image/*,video/*" />
+  </div>
+
+  <div id="adminContainer" hidden>
+    <h3>Admin</h3>
+    <div class="adminRow">
+      <input id="adminGlobalInput" type="number" min="0" placeholder="Set global count" />
+      <button id="adminSetGlobalBtn">Set</button>
     </div>
-
-    <div id="clientContainer">
-      <h3>Your Score</h3>
-      <div id="clientCounter">0</div>
+    <div class="adminRow">
+      <input id="adminAnnouncementInput" placeholder="Broadcast message" />
+      <button id="adminAnnouncementBtn">Broadcast</button>
     </div>
+    <div id="adminStatus"></div>
+  </div>
+  
+  <script src="script.js"></script>
 
-    <div id="leaderboardContainer">
-      <h3>Leaderboard</h3>
-      <ol id="leaderboard"></ol>
-    </div>
-
-    <div id="chatContainer">
-      <div id="chat"></div>
-      <input id="chatInput" placeholder="Type message..." />
-      <button id="sendBtn">Send</button>
-      <input id="chatImageInput" type="file" accept="image/*,video/*" />
-    </div>
-
-    <div id="adminContainer" hidden>
-      <h3>Admin</h3>
-      <div class="adminRow">
-        <input
-          id="adminGlobalInput"
-          type="number"
-          min="0"
-          placeholder="Set global count"
-        />
-        <button id="adminSetGlobalBtn">Set</button>
-      </div>
-      <div class="adminRow">
-        <input id="adminAnnouncementInput" placeholder="Broadcast message" />
-        <button id="adminAnnouncementBtn">Broadcast</button>
-      </div>
-      <div id="adminStatus"></div>
-    </div>
-
-    <script src="script.js"></script>
-  </body>
+</body>
 </html>
